@@ -3,56 +3,41 @@ clc,clear all,close all;
 %% load data
 
 mooring = '12';
-dir     = 'd:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\';
+dir     = 'd:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\';
 
 load([dir,'Mooring',mooring,'_adcp_corr.mat']);
 
 if strcmp(mooring,'12');
-    load('d:\sabinerijnsbur\Matlab\adcp\adcp12C.mat');
+    load('d:\sabinerijnsbur\Matlab_files\Megapex_data\adcp\adcp12C.mat');
+    load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters12');
     load([dir,'radar_adcp']);
     adcp = adcp12C;
-    t    = M12.t;
-    D    = M12.D;
-    if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+    M    = M12;
+    P    = P12;
+    if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
         va   = M12.va;
         vc   = M12.vc;
     end
 else
-    load('d:\sabinerijnsbur\Matlab\adcp\adcp18.mat');
+    load('d:\sabinerijnsbur\Matlab_files\Megapex_data\adcp\adcp18.mat');
+    load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters18');
     adcp = adcp18;
-    t    = M18.t;
-    D    = M18.D;
-    if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+    M    = M18;
+    P    = P18;
+    if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
         va   = M18.va;
         vc   = M18.vc;
     end
 end
 
-% %% Radar data
-% 
-% if strcmp(mooring,'12');
-% %     nfiles = find(radar.t <= t(end),1,'last');
-%     tmp.t = nan(size(t,1),size(t,2));
-%     
-%     for i = 1:numel(radar.t)
-%         ind(i)        = find(t >= radar.t(i),1,'first');
-%         tmp.t(ind(i)) = radar.t(i);
-% 
-%     end
-%     
-% end
-
-
-
-
 %% Select tidal cycle
 
-if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
     ssh  = adcp.h-mean(adcp.h);
     [zc] = Zero_crossing(adcp.time,ssh);
     time = adcp.t;
 else
-    load('d:\sabinerijnsbur\Matlab\MegaPex\Conditions\tide');
+    load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\');
     [ssh] = interp1(T1.t,T1.ssh,t);
     [zc]  = Zero_crossing(t,ssh);
     time  = t;
@@ -65,10 +50,16 @@ for i = 1:length(zc)-1
     id(i)   = aux(idd);
 end
 
-%% Figures to check
+%% Interpolate dx
 
-% t = cell2mat({['t' mooring]});
-% D = ['D',mooring];
+dx  = interp1(P.tt,P.dx,M.t);
+tdx = interp1(P.tt,P.tdx,M.t);
+
+%% Calculate density difference
+
+dD = M.D(end,:)-M.D(1,:); % between bottom and surface 
+
+%% Figures to check
 
 % Check finding maxima
 figure;
@@ -86,14 +77,14 @@ plot(time,ssh)
 hold on
 hline(0,'k');
 h = vline(time(zc),fig.cvline);
-h2= vline(t(1,zc),'--r');
+h2= vline(M.t(1,zc),'--r');
 
 subplot(2,1,2)
-plot(t(1,:),D(1,:)-1000)
+plot(M.t(1,:),M.D(1,:)-1000)
 hold on
 hline(0,'k');
 h  = vline(time(zc),fig.cvline);
-h2 = vline(t(1,zc),'--r');
+h2 = vline(M.t(1,zc),'--r');
 
 all_ha1 = findobj(fig_handle1,'type','axes','tag','');
 linkaxes(all_ha1,'x');
@@ -118,6 +109,7 @@ if strcmp(mooring,'12')
     MT.D5425 = nan((length(zcc)-1),max(x(II)));
     MT.D5426 = nan((length(zcc)-1),max(x(II)));
     MT.D1842 = nan((length(zcc)-1),max(x(II)));
+    MT.dD    = nan((length(zcc)-1),max(x(II)));
     MT.ssh   = nan((length(zcc)-1),max(x(II)));
     MT.t     = nan((length(zcc)-1),max(x(II)));
     MTR.t    = nan((length(zcc)-1),max(x(II)));
@@ -147,17 +139,17 @@ if strcmp(mooring,'12')
         MT.vc355 = nan((length(zcc)-1),max(x(II)));
         MT.dx    = nan((length(zcc)-1),max(x(II)));
         MT.tdx   = nan((length(zcc)-1),max(x(II)));
-        MT.tt    = nan((length(zcc)-1),max(x(II)));
     end
     
     for i = 1:length(zcc)-1
-        nz = length(D(1,zcc(i):zcc(i+1)));
+        nz = length(M.D(1,zcc(i):zcc(i+1)));
         if nz > max(x(II))
             MT.D1527(i,1:max(x(II))) = nan;
             MT.D1526(i,1:max(x(II))) = nan;
             MT.D5426(i,1:max(x(II))) = nan;
             MT.D5425(i,1:max(x(II))) = nan;
             MT.D1842(i,1:max(x(II))) = nan;
+            MT.dD(i,1:max(x(II)))    = nan;
             MT.ssh(i,1:max(x(II)))   = nan;
             MT.t(i,1:max(x(II)))     = nan;
             MTR.t(i,1:max(x(II)))    = nan;
@@ -172,7 +164,7 @@ if strcmp(mooring,'12')
             MTR.off1c(i,1:max(x(II)))= nan;
             MTR.off22(i,1:max(x(II)))= nan;
             MTR.off3l(i,1:max(x(II)))= nan;
-            if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+            if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
                 MT.va1527(i,1:max(x(II)))= nan;
                 MT.va1526(i,1:max(x(II)))= nan;
                 MT.va5425(i,1:max(x(II)))= nan;
@@ -187,16 +179,16 @@ if strcmp(mooring,'12')
                 MT.vc355(i,1:max(x(II))) = nan;
                 MT.dx(i,1:max(x(II)))    = nan;
                 MT.tdx(i,1:max(x(II)))   = nan;
-                MT.tt(i,1:max(x(II)))    = nan;
             end
         else
-            MT.D1527(i,1:nz) = D(1,zcc(i):zcc(i+1));
-            MT.D1526(i,1:nz) = D(2,zcc(i):zcc(i+1));
-            MT.D5426(i,1:nz) = D(3,zcc(i):zcc(i+1));
-            MT.D5425(i,1:nz) = D(4,zcc(i):zcc(i+1));
-            MT.D1842(i,1:nz) = D(5,zcc(i):zcc(i+1));
+            MT.D1527(i,1:nz) = M.D(1,zcc(i):zcc(i+1));
+            MT.D1526(i,1:nz) = M.D(2,zcc(i):zcc(i+1));
+            MT.D5426(i,1:nz) = M.D(3,zcc(i):zcc(i+1));
+            MT.D5425(i,1:nz) = M.D(4,zcc(i):zcc(i+1));
+            MT.D1842(i,1:nz) = M.D(5,zcc(i):zcc(i+1));
+            MT.dD(i,1:nz)    = dD(zcc(i):zcc(i+1));            
             MT.ssh(i,1:nz)   = ssh(zcc(i):zcc(i+1));
-            MT.t(i,1:nz)     = t(zcc(i):zcc(i+1));
+            MT.t(i,1:nz)     = M.t(zcc(i):zcc(i+1));
             MTR.t(i,1:nz)    = radar.t(zcc(i):zcc(i+1));
             MTR.on11(i,1:nz) = radar.on11(zcc(i):zcc(i+1));
             MTR.on1l(i,1:nz) = radar.on1l(zcc(i):zcc(i+1));
@@ -209,7 +201,7 @@ if strcmp(mooring,'12')
             MTR.off1c(i,1:nz)= radar.off1c(zcc(i):zcc(i+1));
             MTR.off22(i,1:nz)= radar.off22(zcc(i):zcc(i+1));
             MTR.off3l(i,1:nz)= radar.off3l(zcc(i):zcc(i+1));
-            if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+            if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
                 MT.va1527(i,1:nz)= va(1,zcc(i):zcc(i+1));
                 MT.va1526(i,1:nz)= va(2,zcc(i):zcc(i+1));
                 MT.va5425(i,1:nz)= va(3,zcc(i):zcc(i+1));
@@ -222,7 +214,8 @@ if strcmp(mooring,'12')
                 MT.vc5426(i,1:nz)= vc(4,zcc(i):zcc(i+1));
                 MT.vc1842(i,1:nz)= vc(5,zcc(i):zcc(i+1));
                 MT.vc355(i,1:nz) = vc(6,zcc(i):zcc(i+1));
-%                 MT.dx(i,1:nz)    = (6,zcc(i):zcc(i+1));
+                MT.dx(i,1:nz)    = dx(1,zcc(i):zcc(i+1));
+                MT.tdx(i,1:nz)   = tdx(1,zcc(i):zcc(i+1));
             end
         end
     end
@@ -234,9 +227,10 @@ elseif strcmp(mooring,'18');
     MT.D4939 = nan((length(zcc)-1),max(x(II)));
     MT.D4940 = nan((length(zcc)-1),max(x(II)));
     MT.D19   = nan((length(zcc)-1),max(x(II)));
+    MT.dD    = nan((length(zcc)-1),max(x(II)));
     MT.ssh   = nan((length(zcc)-1),max(x(II)));
     MT.t     = nan((length(zcc)-1),max(x(II)));
-    if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+    if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
         MT.va1525= nan((length(zcc)-1),max(x(II)));
         MT.va4939= nan((length(zcc)-1),max(x(II)));
         MT.va4940= nan((length(zcc)-1),max(x(II)));
@@ -245,18 +239,21 @@ elseif strcmp(mooring,'18');
         MT.vc4939= nan((length(zcc)-1),max(x(II)));
         MT.vc4940= nan((length(zcc)-1),max(x(II)));
         MT.vc19  = nan((length(zcc)-1),max(x(II)));
+        MT.dx    = nan((length(zcc)-1),max(x(II)));
+        MT.tdx   = nan((length(zcc)-1),max(x(II)));
     end
     
     for i = 1:length(zcc)-1
-        nz = length(D(1,zcc(i):zcc(i+1)));
+        nz = length(M.D(1,zcc(i):zcc(i+1)));
         if nz > max(x(II))
             MT.D1525(i,1:max(x(II))) = nan;
             MT.D4939(i,1:max(x(II))) = nan;
             MT.D4940(i,1:max(x(II))) = nan;
             MT.D19  (i,1:max(x(II))) = nan;
+            MT.dD   (i,1:max(x(II))) = nan;
             MT.ssh(i,1:max(x(II)))   = nan;
             MT.t(i,1:max(x(II)))     = nan;
-            if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+            if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
                 MT.va1525(i,1:max(x(II)))= nan;
                 MT.va4939(i,1:max(x(II)))= nan;
                 MT.va4940(i,1:max(x(II)))= nan;
@@ -265,15 +262,18 @@ elseif strcmp(mooring,'18');
                 MT.vc4939(i,1:max(x(II)))= nan;
                 MT.vc4940(i,1:max(x(II)))= nan;
                 MT.vc19  (i,1:max(x(II)))= nan;
+                MT.dx(i,1:max(x(II)))    = nan;
+                MT.tdx(i,1:max(x(II)))   = nan;
             end
         else
-            MT.D1525(i,1:nz) = D(1,zcc(i):zcc(i+1));
-            MT.D4939(i,1:nz) = D(2,zcc(i):zcc(i+1));
-            MT.D4940(i,1:nz) = D(3,zcc(i):zcc(i+1));
-            MT.D19(i,1:nz)   = D(4,zcc(i):zcc(i+1));
+            MT.D1525(i,1:nz) = M.D(1,zcc(i):zcc(i+1));
+            MT.D4939(i,1:nz) = M.D(2,zcc(i):zcc(i+1));
+            MT.D4940(i,1:nz) = M.D(3,zcc(i):zcc(i+1));
+            MT.D19(i,1:nz)   = M.D(4,zcc(i):zcc(i+1));
+            MT.dD(i,1:nz)    = dD(zcc(i):zcc(i+1));            
             MT.ssh(i,1:nz)   = ssh(zcc(i):zcc(i+1));
-            MT.t(i,1:nz)     = t(zcc(i):zcc(i+1));
-            if strcmp(dir,'d:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\')
+            MT.t(i,1:nz)     = M.t(zcc(i):zcc(i+1));
+            if strcmp(dir,'d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\')
                 MT.va1525(i,1:nz)= va(1,zcc(i):zcc(i+1));
                 MT.va4939(i,1:nz)= va(2,zcc(i):zcc(i+1));
                 MT.va4940(i,1:nz)= va(3,zcc(i):zcc(i+1));
@@ -282,6 +282,8 @@ elseif strcmp(mooring,'18');
                 MT.vc4939(i,1:nz)= vc(2,zcc(i):zcc(i+1));
                 MT.vc4940(i,1:nz)= vc(3,zcc(i):zcc(i+1));
                 MT.vc19(i,1:nz)  = vc(4,zcc(i):zcc(i+1));
+                MT.dx(i,1:nz)    = P.dx(1,zcc(i):zcc(i+1));
+                MT.tdx(i,1:nz)   = P.tdx(1,zcc(i):zcc(i+1));
             end
         end
     end

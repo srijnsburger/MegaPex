@@ -1,7 +1,7 @@
 clc;clear all;close all;
 
 % Load data
-dir  = 'd:\sabinerijnsbur\Matlab\Moorings\Mfiles_adcp\';
+dir  = 'd:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\';
 load([dir,'Mooring18_adcp_corr.mat']);
 load([dir,'Mooring12_adcp_corr.mat']);
 
@@ -59,7 +59,8 @@ T12.tdx(i)  = (T12.t(i)+T12.t(i+1))/2;
 end
 
 save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Tidalanalysis\T12','T12');
-save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters12','P12');
+save([dir,'Parameters12'],'P12');
+% save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters12','P12');
 % clc;clear all;close all;
 
 %% Tidal velocity 18m - based on entire timeseries
@@ -83,7 +84,8 @@ T18.tdx(i)  = (T18.t(i)+T18.t(i+1))/2;
 end
 
 save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Tidalanalysis\T18','T18');
-save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters18','P18');
+save([dir,'Parameters18'],'P18');
+% save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters18','P18');
 
 %% Tidal velocity 12m - based on M2 tide
 

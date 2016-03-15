@@ -8,8 +8,8 @@ load([dir,'Mooring12_adcp_corr.mat']);
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\adcp\adcp12C');
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\adcp\adcp18');
 
-load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters12');
-load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters18');
+load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Parameters12');
+load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Parameters18');
 
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Tidalanalysis\TC12.mat');
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Tidalanalysis\TC18.mat');
@@ -31,6 +31,7 @@ plot(M12.t,M12.ssh);
 grid on
 hline(0,'k');
 xlim(fig.xlim);
+title('12m site');
 
 h2 = subplot(4,1,2);
 plot(adcp12C.t,adcp12C.meanva);
@@ -62,6 +63,7 @@ plot(M18.t,M18.ssh);
 grid on
 hline(0,'k');
 xlim(fig.xlim);
+title('18m site');
 
 h2 = subplot(4,1,2);
 plot(adcp18.t,adcp18.meanva);
@@ -74,7 +76,7 @@ plot(P18.tt,P18.dx);
 grid on
 hold on
 plot(TC18.tdx,TC18.dx);
-plot(P18.tt,P18.tdx);
+% plot(P18.tt,P18.tdx);
 hline(0,'k');
 xlim(fig.xlim);
 

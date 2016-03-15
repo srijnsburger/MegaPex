@@ -4,7 +4,7 @@ clc;clear all;close all;
 % 12m 
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Mooring12_adcp_corr.mat');
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\adcp\adcp12');
-load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters12.mat');
+load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Parameters12.mat');
 
 % convert depths
 P   = M12.P*-1;
@@ -32,12 +32,12 @@ for i = 1:size(M12.D,2)
 end
 
 clear rho1 rho2 depth1 depth2 mask1
-save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters12','-append','P12');
+save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Parameters12','-append','P12');
 %% 18m
 
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Mooring18_adcp_corr.mat');
 load('d:\sabinerijnsbur\Matlab_files\Megapex_data\adcp\adcp18');
-load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters18.mat');
+load('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Parameters18.mat');
 
 P   = M18.P*-1;
 eta = adcp18.h - nanmean(adcp18.h);
@@ -64,7 +64,7 @@ for i = 1:size(M18.D,2)
     end
 end
 
-save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Parameters18','-append','P18');
+save('d:\sabinerijnsbur\Matlab_files\Megapex_data\Moorings\Mfiles_adcp\Parameters18','-append','P18');
 
 %% Check with Navicula data
 
